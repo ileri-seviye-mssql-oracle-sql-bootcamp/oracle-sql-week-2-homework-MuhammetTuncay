@@ -22,92 +22,156 @@ CREATE TABLE food_material_list (
 );
 
 
-SELECT PRODUCT_NAME,QUOTA
-from product where QUOTA = 'LIMITLESS';--Kotası limitsiz olan ürünler hangileridir? ----Telco şeması için
+-- Kotası limitsiz olan ürünler hangileridir?
+SELECT * FROM PRODUCT WHERE QUOTA ='LIMITLESS';
 
-SELECT NAME,SURNAME,STATUS
-from customer where STATUS = 'INITIAL';-- Statüsü 'Initial' olan müşterileri bulunuz. ----Telco şeması için
+-- Statüsü 'Initial' olan müşterileri bulunuz.
+SELECT CUSTOMER_NUM,NAME,SURNAME,STATUS FROM CUSTOMER WHERE STATUS = 'INITIAL';
+SELECT * FROM CUSTOMER WHERE STATUS = 'INITIAL';
 
-SELECT FULL_ADDRESS,CITY
-from address where CITY = 'Istanbul';-- Şehir bilgisi 'ISTANBUL' olan adresleri bulunuz. ----Telco şeması için
+-- Şehir bilgisi 'ISTANBUL' olan adresleri bulunuz.
+SELECT * FROM ADDRESS WHERE CITY = 'Istanbul';
 
-SELECT * FROM order_ıtems WHERE UNIT_PRICE > 150;-- Birim fiyatı 150'den büyük olan order_itemları bulunuz. ----Sales şeması için
+-- Hesap ödeme şekli nakit olmayan hesaplar hangileridir?
+SELECT * FROM ACCOUNT WHERE PAYMENT_TYPE! = 'CASH'
+ORDER BY 13;
 
--- İşe alım tarihi Mayıs 2016 olan çalışanları bulunuz. ----Sales şeması için
--- SELECT * FROM employees WHERE TO_CHAR(HIRE_DATE,’YYYY’) = 2016
--- AND TO_CHAR(HIRE_DATE,’MM’) = 05;
+SELECT * FROM ACCOUNT WHERE NOT(PAYMENT_TYPE = 'CASH')
+ORDER BY 13;
 
-SELECT * FROM contacts WHERE fırst_name = 'Charlie ' OR fırst_name = 'Charlsie';-- Adı Charlie ya da Charlsie olan contactları bulunuz. ----Sales şeması için
+-- Statüsü deaktif olan müşterilerin bağlantı kesim tarihleri nedir?
+SELECT CUSTOMER_NUM,NAME,SURNAME,DISCONNECTION_DATE FROM customer WHERE STATUS = 'DEACTIVE';
 
---Yılın 4. aylarında en çok hangi amaçla kredi çekilmi?tir? ----Banking şeması için
+-- Hesap kapanış tarihi dolu olan hesapları bulunuz.
+SELECT * FROM ACCOUNT WHERE ACCOUNT_CLOSING_DATE IS NOT NULL ;
+
+-- Elektronik fatura mail adresi (E_bill_email) olan hesaplar hangileridir?
+SELECT * FROM account WHERE E_BILL_EMAIL IS NOT NULL ;
+
+-- Sözleşme bitiş tarihi 1 Ocak 2000'den büyük , 1 Ocak 2005'ten küçük olan sözleşmeleri bulunuz.
+SELECT * FROM AGREEMENT
+WHERE COMMITMENT_END_DATE > '2000/01/01' AND COMMITMENT_END_DATE < '2005/01/01';
+
+SELECT * FROM AGREEMENT
+WHERE COMMITMENT_END_DATE BETWEEN '2000/01/01' AND '2005/01/01';
+
+-- Sözleşme bağlantı tarihi Ocak 2010'dan büyük olan sözleşmeleri bulunuz.
+SELECT * FROM AGREEMENT WHERE COMMITMENT_START_DATE > '2010/01/01';
+
+-- İsmi E ile başlayan müşterileri bulunuz
+SELECT * FROM CUSTOMER WHERE NAME LIKE 'E%';
+
+-- Product tipi 'DSL' ile biten ürünleri bulunuz.
+SELECT * FROM PRODUCT WHERE PRODUCT_TYPE LIKE '%DSL';
+
+-- İsminde ya da soyisminde 'ü' harfi geçen müşteriler hangileridir?
+SELECT * FROM CUSTOMER WHERE NAME LIKE '%ü%' OR SURNAME LIKE '%ü%';
+
+-- Ülke kodu UK ve AU olan adresleri bulunuz.
+SELECT * FROM ADDRESS WHERE COUNTRY_CD = 'UK' OR COUNTRY_CD = 'AU';
+
+-- Taahhüt süresi 240 ve 120 ay olan bütün sözleşmeleri bulmak istiyoruz.
+SELECT * FROM AGREEMENT WHERE COMMITMENT_DURATION = '240 MONTHS' OR COMMITMENT_DURATION = '120 MONTHS' ORDER BY 11;
+
+--Sözleşme alt tipi MAIN olan kaç tane sözleşme vardır?
+SELECT  COUNT(SUBTYPE) FROM AGREEMENT WHERE SUBTYPE='MAIN';
+
+-- İletişim tipi olarak email ve statusu kullanımda olan kaç müşteri var?
+SELECT COUNT(*) FROM ACCOUNT WHERE STATUS = 'ACTIVE' AND E_BILL_EMAIL IS NOT NULL;
+
+-- Deaktif müşterilerin sayısını bulunuz.
+SELECT COUNT(STATUS) FROM CUSTOMER WHERE STATUS = 'DEACTIVE';
+
+-- Birincil iletişim bilgisi olmayan telefon numaralarını bulunuz.
+SELECT * FROM CONTACT WHERE CNT_TYPE = 'PHONE' AND IS_PRIMARY = 0;
+
+-- 2005 yılından önce yapılan ve hala aktif olan subscriptionlar hangileridir?
+SELECT * FROM subscrıption WHERE CREATE_DATE < '01/01/2005' AND STATUS = 'ACTIVE';
 
 
-SELECT * FROM ınventorıes WHERE QUANTITY > '10 ' AND QUANTITY < '50';-- Adet sayısı 10dan büyük 50den küçük envanterleri bulunuz. ----Sales şeması için
+--Yılın 4. aylarında en çok hangi amaçla kredi çekilmi?tir?
+SELECT COUNT(L.purpose),l.purpose FROM TRANSACTIONS T
+INNER JOIN ACCOUNTS A ON T.account_id = A.account_id
+INNER JOIN LOANS L ON L.account_id = A.account_id
+WHERE L.month = 4
+group by l.purpose;
 
-SELECT CNT_VALUE from contact where IS_PRIMARY = '0';-- Birincil iletişim bilgisi olmayan telefon numaralarını bulunuz. ----Telco şeması için
+--Hangi yıllarda kaç hesap açılmıştır?
+select count(account_id) as Hesap_Numarası ,year as Yıl from accounts group by year order by 2 ;
 
--- Bir siparişte toplam 100.0000'den fazla ücret ödeyen emirler nedir? ----Sales şeması için
+-- İşlemlerin tiplerine göre toplam sayılarının büyükten küçüğe sıralaması nedir?-
+select count(type) as ISLEM_SAYISI, type AS ISLEM_TURU from transactions group by type;
 
--- Bankanın 50 ve ya 51 yaşında kadın müşterilerinden aynı isme sahip olan müşterisi/müşterileri var mı? Varsa isimleri neler?----Banking şeması için
+-- İşlemlerin tiplerine göre toplam tutarlarının büyükten küçüğe sıralaması nedir?
+select COUNT(BALANCE)AS TOPLAM_TUTAR ,TYPE AS ISLEM_TUR FROM transactions GROUP BY TYPE ORDER BY 1;
 
--- Hesap ödeme şekli nakit olmayan hesaplar hangileridir? ----Telco şeması için
+-- Bankanın 50 ve ya 51 yaşında kadın müşterilerinden aynı isme sahip olan müşterisi/müşterileri var mı? Varsa isimleri neler?
+select COUNT(DISTINCT FIRST),FIRST from clients
+where AGE BETWEEN 50 AND 51
+AND SEX = 'Female'
+GROUP BY FIRST;
 
--- Statüsü deaktif olan müşterilerin bağlantı kesim tarihleri nedir? ----Telco şeması için
+--SALES QUERY
 
--- Manager'ı olmayan çalışanlar hangileridir? ----Sales şeması için
+-- Birim fiyatı 150'den büyük olan order_itemları bulunuz.
+select * from order_items where UNIT_PRICE >150;
+
+-- İşe alım tarihi Mayıs 2016 olan çalışanları bulunuz.
+SELECT * FROM EMPLOYEES WHERE HIRE_DATE BETWEEN '01/05/2016' AND '30/05/2016';
+
+-- Adı Charlie ya da Charlsie olan contactları bulunuz.
+SELECT * FROM CONTACTS WHERE FIRST_NAME = 'Charlie' OR FIRST_NAME = 'Charlsie' ;
+
+-- Adet sayısı 10dan büyük 50den küçük envanterleri bulunuz.
+SELECT * FROM INVENTORIES WHERE QUANTITY > 10 AND QUANTITY<50;
+
+-- Manager'ı olmayan çalışanlar hangileridir?
+SELECT * FROM EMPLOYEES WHERE MANAGER_ID IS NULL;
 
 -- State bilgisi boş olan lokasyonları bulunuz.----Sales şeması için
+SELECT * FROM LOCATIONS WHERE STATE IS NULL;
 
--- Hesap kapanış tarihi dolu olan hesapları bulunuz. ----Telco şeması için
-
--- Elektronik fatura mail adresi (E_bill_email) olan hesaplar hangileridir? ----Telco şeması için
-
--- Durumu iptal olan ve satıcıları olmayan emirler hangileridir? ----Sales şeması için
-
--- Sözleşme bitiş tarihi 1 Ocak 2000'den büyük , 1 Ocak 2005'ten küçük olan sözleşmeleri bulunuz. ----Telco şeması için
+--  Durumu iptal olan ve satıcıları olmayan emirler hangileridir? ----Sales şeması için
+SELECT * FROM ORDERS WHERE STATUS = 'Canceled' AND SALESMAN_ID IS NULL;
 
 -- Ocak 2016 ile Haziran 2016 arasında verilen siparişler hangileridir? ----Sales şeması için
+SELECT * FROM ORDERS WHERE ORDER_DATE BETWEEN '01/01/2016' AND '30/06/2016';
 
--- 2005 yılından önce yapılan ve hala aktif olan subscriptionlar hangileridir? ----Telco şeması için
-
--- Sözleşme başlangıç tarihi Ocak 2010'dan büyük olan sözleşmeleri bulunuz. ----Telco şeması için
-
--- İsmi E ile başlayan müşterileri bulunuz. ----Telco şeması için
-
--- Product tipi 'DSL' ile biten ürünleri bulunuz. ----Telco şeması için
-
--- Unvanı 'S' ile başlamayan çalışanları bulunuz. ----Sales şeması için
+--  Unvanı 'S' ile başlamayan çalışanları bulunuz. ----Sales şeması için.
+SELECT * FROM EMPLOYEES WHERE JOB_TITLE NOT LIKE 'S%' ORDER BY job_title;
 
 -- Herhangi bir çeşit Intel Xeon ürünler hangileridir? ----Sales şeması için
-
--- İsminde ya da soyisminde 'ü' harfi geçen müşteriler hangileridir? ----Telco şeması için
+SELECT * FROM productS WHERE PRODUCT_NAME LIKE 'Intel Xeon%';
 
 -- İsmi 'C' ile başlayan kontaklar hangileridir? Soyadına göre alfabetik sıra ile sıralayalım. ----Sales şeması için
+SELECT * FROM CONTACTS WHERE FIRST_NAME LIKE 'C%' ORDER BY LAST_NAME ;
 
 -- Ürün adı 'Asus' ile başlayan ve liste fiyatı standart ücretinden küçük olan ürünleri bulunuz. ----Sales şeması için
+SELECT * FROM PRODUCTS WHERE PRODUCT_NAME LIKE 'Asus%' AND LIST_PRICE < STANDARD_COST ;
 
--- Ülke kodu UK ve AU olan adresleri bulunuz.----Telco şeması için
-
--- 1,2,4,5 id'li kategorilerin bilgilerini bulunuz. ----Sales şeması için
-
--- Taahhüt süresi 240 ve 120 ay olan bütün sözleşmeleri bulmak istiyoruz.----Telco şeması için
+-- 1,2,4,5 id'li kategorilerin bilgilerini bulunuz.
+SELECT * FROM PRODUCT_CATEGORIES WHERE CATEGORY_ID BETWEEN 1 AND 5;
 
 -- Sipariş durumu 'Shipped'den farklı olan müşterilerin bilgilerini bulunuz. ----Sales şeması için
+SELECT * FROM ORDERS WHERE STATUS! = 'Shipped';
 
 -- Adet sayısı 100e eşit olan envanterlerin product bilgisini bulunuz. ----Sales şeması için
-
--- Sözleşme alt tipi MAIN olan kaç tane sözleşme vardır?----Telco şeması için
-
--- Deaktif müşterilerin sayısını bulunuz.----Telco şeması için
+SELECT * FROM INVENTORIES I
+LEFT JOIN PRODUCTS P
+ON I.product_id = P.product_id
+WHERE QUANTITY = 100;
 
 -- Beijing (8 numaralı warehouse)'da kaç farklı envanter vardır? ----Sales şeması için
-
--- İletişim tipi olarak email ve statusu kullanımda olan kaç müşteri var?----Telco şeması için
+SELECT COUNT(W.WAREHOUSE_ID)AS ENVARTER_KAYIT_SAYISI FROM INVENTORIES I
+INNER JOIN WAREHOUSES W
+ON I.warehouse_id = W.warehouse_id
+WHERE W.WAREHOUSE_ID = 8;
 
 -- Liste fiyati 1000 ile 3000 arasinda olan kaç product var?----Sales şeması için
+SELECT * FROM PRODUCTS WHERE LIST_PRICE BETWEEN 1000 AND 3000;
 
---Hangi yıllarda kaç hesap açılmıştır?----Banking şeması için
-
--- İşlemlerin tiplerine göre toplam sayılarının büyükten küçüğe sıralaması nedir?----Banking şeması için
-
--- İşlemlerin tiplerine göre toplam tutarlarının büyükten küçüğe sıralaması nedir?----Banking şeması için
+-- Bir siparişte toplam 100.0000'den fazla ücret ödeyen emirler nedir? ----Sales şeması için
+SELECT ORDER_ID FROM ORDER_ITEMS
+WHERE (QUANTITY * UNIT_PRICE) > 100000
+GROUP BY ORDER_ID
+ORDER BY 1;
